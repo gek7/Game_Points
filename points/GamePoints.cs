@@ -260,6 +260,7 @@ namespace points
             List<MPoint> Edges=null;
             Stack<List<MPoint>> BunchForDel = new Stack<List<MPoint>>();
             List<MPoint> pointsForDel = new List<MPoint>();
+            List<MPoint> lastEdges = null ;
             for (int i = 0; i < 2; i++)
             {
                 int catchedPoints = 0;
@@ -274,7 +275,8 @@ namespace points
                             BunchForDel.Push(item);
                             sortEdges(ref Edges);
                             Edges.Add(Edges[0]);
-                            BeginAnimationCapture(Edges);
+                            BeginAnimationCapture(Edges,lastEdges) ;
+                            lastEdges = Edges;
                         }
                     }
                 }
@@ -434,7 +436,7 @@ namespace points
         }
 
         // Начать анимацию захвата точек
-        private void BeginAnimationCapture(List<MPoint> Edges)
+        private void BeginAnimationCapture(List<MPoint> Edges, List<MPoint> LastEdges)
         {
             Brush EdgeColor = linksOnPoints[Edges[0].i, Edges[0].j].Fill;
             Polygon p = new Polygon();
@@ -461,8 +463,13 @@ namespace points
                 l.BeginAnimation(Line.Y2Property, da2);
                 CaptureElements.Add(l);
             }
-            DoubleAnimation back = new DoubleAnimation(0, 0.4, TimeSpan.FromMilliseconds(1000));
-            p.BeginAnimation(Polygon.OpacityProperty, back);
+            if ((LastEdges!=null && LastEdges.Count!=Edges.Count)||(LastEdges==null))
+            {
+                DoubleAnimation back = new DoubleAnimation(0, 0.4, TimeSpan.FromMilliseconds(1000));
+                p.BeginAnimation(Polygon.OpacityProperty, back);
+                MessageBox.Show("Animation");
+                CaptureElements.Add(p);
+            }
         }
     }
 }
