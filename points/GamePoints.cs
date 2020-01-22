@@ -393,6 +393,7 @@ namespace points
             bunches[id - 1] = CurBunches;
         }
 
+        // Отсортировать точки границы(Для анимации)
         public void sortEdges(ref List<MPoint> Edges)
         {
             List<MPoint> outputList = new List<MPoint>();
@@ -432,21 +433,21 @@ namespace points
             Edges = outputList;
         }
 
+        // Начать анимацию захвата точек
         private void BeginAnimationCapture(List<MPoint> Edges)
         {
             Brush EdgeColor = linksOnPoints[Edges[0].i, Edges[0].j].Fill;
             Polygon p = new Polygon();
             p.Fill = EdgeColor;
-            //p.Points.Add(coordMatr[Edges[0].i, Edges[0].j]);
-            p.Opacity = 0.2;
+            p.Opacity = 0;
+            p.Points.Add(coordMatr[Edges[0].i, Edges[0].j]);
             grid1.Children.Add(p);
             for (int j = 1; j < Edges.Count; j++)
             {
                 Line l = new Line();
                 Point p1 = coordMatr[Edges[j - 1].i, Edges[j - 1].j];
                 Point p2 = coordMatr[Edges[j].i, Edges[j].j];
-                p.Points.Add(p1);
-                //p.Points.Add(coordMatr[Edges[j].i, Edges[j].j]);
+                p.Points.Add(coordMatr[Edges[j].i, Edges[j].j]);
                 l.X1 = p1.X;
                 l.Y1 = p1.Y;
                 l.X2 = p2.X;
@@ -454,14 +455,14 @@ namespace points
                 l.Stroke = EdgeColor;
                 l.StrokeThickness = 3;
                 grid1.Children.Add(l);
-                PointAnimation d = new PointAnimation(p.Points.Last(), p2, TimeSpan.FromMilliseconds(1000));
                 DoubleAnimation da = new DoubleAnimation(p1.X, p2.X, TimeSpan.FromMilliseconds(1000));
                 DoubleAnimation da2 = new DoubleAnimation(p1.Y, p2.Y, TimeSpan.FromMilliseconds(1000));
                 l.BeginAnimation(Line.X2Property, da);
                 l.BeginAnimation(Line.Y2Property, da2);
-                //p.BeginAnimation(, d);
                 CaptureElements.Add(l);
             }
+            DoubleAnimation back = new DoubleAnimation(0, 0.4, TimeSpan.FromMilliseconds(1000));
+            p.BeginAnimation(Polygon.OpacityProperty, back);
         }
     }
 }
