@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 
 namespace points
@@ -20,6 +22,9 @@ namespace points
         List<UIElement> Lines = new List<UIElement>();
         // Хранятся ссылки на все точки
         List<UIElement> Ellipses = new List<UIElement>();
+        //Хранятся ссылки на элементы для обводки
+
+        List<UIElement> CaptureElements = new List<UIElement>();
         // Хранятся координаты, куда можно поставить точки
         Point[,] coordMatr = new Point[19,19];
         // Хранятся поставленные точки { 0 - место не занято, 1 - первый игрок, 2 - второй игрок  }
@@ -28,14 +33,11 @@ namespace points
         // 'Пучки' точек игроков. Одна точка считается отдельным 'пучком'
         List<List<MPoint>>[] bunches = new List<List<MPoint>>[2];
         // Окно отладки
-        DebugWindow d;
         // Конструктор 
         public GamePoints(Window curWindow,Grid g)
         {
             gameWindow = curWindow;
             grid1 = g;
-            d = new DebugWindow();
-            d.Show();
         }
 
         // Отрисовка поля
@@ -47,6 +49,7 @@ namespace points
             // 21 итерация (ещё одна для отрисовки последней линии поля)
             for (int i = 0; i <= 20; i++)
             {
+                TextBlock text = new TextBlock();
                 Line l = new Line();
                 if (i == 0 || i == 20)
                 {
@@ -68,6 +71,19 @@ namespace points
                 l.Stroke = Brushes.Black;
                 x1 += (WidthWorkArea) / 20;
                 x2 += x1;
+                // Для цифр
+                if (i >= 0 && i < 19)
+                {
+                    text.Foreground = Brushes.Red;
+                    text.FontSize = 20;
+                    text.Text = $"{i}";
+                    Thickness t = new Thickness();
+                    t.Left = x1-5;
+                    t.Top = y1 - 30;
+                    text.Margin = t;
+                    grid1.Children.Add(text);
+                }
+                ///////
                 grid1.Children.Add(l);
                 Lines.Add(l);
             }
@@ -79,6 +95,7 @@ namespace points
             y2 = y1;
             for (int i = 0; i <= 20; i++)
             {
+                TextBlock text2 = new TextBlock();
                 Line l = new Line();
                 if (i == 0 || i == 20)
                 {
@@ -101,6 +118,19 @@ namespace points
                 l.Stroke = Brushes.Black;
                 y1 += (WidthWorkArea) / 20;
                 y2 += y1;
+                // Для цифр
+                if (i >= 0 && i < 19)
+                {
+                    text2.Foreground = Brushes.Red;
+                    text2.FontSize = 20;
+                    text2.Text = $"{i}";
+                    Thickness t = new Thickness();
+                    t.Left = x1 - 30;
+                    t.Top = y1-15;
+                    text2.Margin = t;
+                    grid1.Children.Add(text2);
+                }
+                /////////
                 grid1.Children.Add(l);
                 Lines.Add(l);
             }
@@ -114,6 +144,7 @@ namespace points
                 grid1.Children.Remove(u);
             }
             ClearField();
+            Lines.Clear();
         }
 
         // Очищение поля
@@ -123,9 +154,18 @@ namespace points
             {
                 grid1.Children.Remove(item);
             }
+            foreach (var item in linksOnPoints)
+            {
+                grid1.Children.Remove(item);
+            }
+            foreach ( var item in CaptureElements)
+            {
+                grid1.Children.Remove(item);
+            }
             pointMatr = new int[19, 19];
+            linksOnPoints = new Ellipse[19, 19];
             bunches = new List<List<MPoint>>[2];
-
+            CaptureElements = new List<UIElement>();
         }
 
         // Установка точки на поле (Если возможно)
@@ -157,7 +197,6 @@ namespace points
                                 Ellipses.Add(r);
                                 GenerateBunches(new MPoint(i,j), CurPlayer.id);
                                 CheckCatchBunch();
-                                d.RefreshDebugPointMatr(pointMatr);
                                 return true;
                             }
                             else
@@ -180,12 +219,13 @@ namespace points
                     if ((pointMatr[i, j] != id) || (i == p.i && j == p.j)) tempArr[i, j] = pointMatr[i, j];
 
                 Queue<MPoint> WaitingPoints = new Queue<MPoint>();
-            List<MPoint> Edges = new List<MPoint>();
+                List<MPoint> Edges = new List<MPoint>();
             WaitingPoints.Enqueue(p);
+            if (p.i == 0 || p.j == 18 || p.j == 0 || p.i == 18)
+                return null;
             do
             {
                 MPoint curPoint = WaitingPoints.Dequeue();
-
                     tempArr[curPoint.i, curPoint.j] = id;
                     List<MPoint> tempList = FindPath(curPoint,false);
 
@@ -227,31 +267,20 @@ namespace points
                 {
                     foreach (var item in bunches[i])
                     {
+                        Edges = null;
                         Edges = CheckCatchPoint(item[0], i + 1);
                         if (Edges != null)
                         {
                             BunchForDel.Push(item);
                             sortEdges(ref Edges);
                             Edges.Add(Edges[0]);
-                            for (int j = 1; j < Edges.Count; j++)
-                            {
-                                Line l = new Line();
-                                Point p1 = coordMatr[Edges[j - 1].i, Edges[j - 1].j];
-                                Point p2 = coordMatr[Edges[j].i, Edges[j].j];
-                                l.X1 = p1.X;
-                                l.Y1 = p1.Y;
-                                l.X2 = p2.X;
-                                l.Y2 = p2.Y;
-                                l.Stroke = Brushes.Green;
-                                l.StrokeThickness = 3;
-                                grid1.Children.Add(l);
-                            }
+                            BeginAnimationCapture(Edges);
                         }
                     }
                 }
 
                 // Подсчёт захваченных точек
-                for (int j = 0; j < BunchForDel.Count; j++)
+                while (BunchForDel.Count > 0)
                 {
                     pointsForDel = BunchForDel.Pop();
                     catchedPoints += pointsForDel.Count();
@@ -260,6 +289,9 @@ namespace points
                         pointMatr[point.i, point.j] *= -1;
                     }
                     bunches[i].Remove(pointsForDel);
+                }
+                if (catchedPoints > 0)
+                {
                     MessageBox.Show($"Gotcha {catchedPoints}");
                 }
             }
@@ -303,7 +335,7 @@ namespace points
             return temp;
         }
 
-        // Генерирует пучки, которые можно захватить
+        // Генерирует пучки, которые можно захватит
         public void GenerateBunches(MPoint newP,int id)
         {
             List<List<MPoint>> CurBunches = bunches[id - 1] ?? new List<List<MPoint>>();
@@ -312,18 +344,19 @@ namespace points
             int i = 0;
             int j,c;
 
-            //Попытка присоединения точки к какому-нибудь 'пучку'
             while (i < CurBunches.Count)
             {
                 j = 0;
-                while (j < CurBunches[i].Count)
+                bool f = false;
+                while (j < CurBunches[i].Count && !f)
                 {
                     c = 0;
-                    while (c < Paths.Count)
+                    while (c < Paths.Count && !f)
                     {
                         if (Paths[c] == CurBunches[i][j])
                         {
                             FoundBunches.Add(CurBunches[i]);
+                            f = true;
                         }
                         c++;
                     }
@@ -344,13 +377,16 @@ namespace points
                 }
                 tempBunch.Add(newP);
                 CurBunches.Add(tempBunch);
+                //MessageBox.Show($"Найдено больше 1 пучка");
             }
             else if(FoundBunches.Count==1)
             {
+                //MessageBox.Show($"Найден 1 пучок");
                 CurBunches[CurBunches.IndexOf(FoundBunches[0])].Add(newP);
             }
             else
             {
+                //MessageBox.Show($"Пучок не найден");
                 tempBunch.Add(newP);
                 CurBunches.Add(tempBunch);
             }
@@ -394,6 +430,38 @@ namespace points
                 }
             }
             Edges = outputList;
+        }
+
+        private void BeginAnimationCapture(List<MPoint> Edges)
+        {
+            Brush EdgeColor = linksOnPoints[Edges[0].i, Edges[0].j].Fill;
+            Polygon p = new Polygon();
+            p.Fill = EdgeColor;
+            //p.Points.Add(coordMatr[Edges[0].i, Edges[0].j]);
+            p.Opacity = 0.2;
+            grid1.Children.Add(p);
+            for (int j = 1; j < Edges.Count; j++)
+            {
+                Line l = new Line();
+                Point p1 = coordMatr[Edges[j - 1].i, Edges[j - 1].j];
+                Point p2 = coordMatr[Edges[j].i, Edges[j].j];
+                p.Points.Add(p1);
+                //p.Points.Add(coordMatr[Edges[j].i, Edges[j].j]);
+                l.X1 = p1.X;
+                l.Y1 = p1.Y;
+                l.X2 = p2.X;
+                l.Y2 = p2.Y;
+                l.Stroke = EdgeColor;
+                l.StrokeThickness = 3;
+                grid1.Children.Add(l);
+                PointAnimation d = new PointAnimation(p.Points.Last(), p2, TimeSpan.FromMilliseconds(1000));
+                DoubleAnimation da = new DoubleAnimation(p1.X, p2.X, TimeSpan.FromMilliseconds(1000));
+                DoubleAnimation da2 = new DoubleAnimation(p1.Y, p2.Y, TimeSpan.FromMilliseconds(1000));
+                l.BeginAnimation(Line.X2Property, da);
+                l.BeginAnimation(Line.Y2Property, da2);
+                //p.BeginAnimation(, d);
+                CaptureElements.Add(l);
+            }
         }
     }
 }
