@@ -26,7 +26,7 @@ namespace points
         public MainWindow()
         {
             InitializeComponent();
-            mainGame = new GamePoints(this, grid1);
+            mainGame = new GamePoints(this, grid1,ScorePlayer1,ScorePlayer2);
             mainGame.drawField();
         }
 

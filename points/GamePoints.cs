@@ -32,12 +32,17 @@ namespace points
         Ellipse[,] linksOnPoints = new Ellipse[19, 19];
         // 'Пучки' точек игроков. Одна точка считается отдельным 'пучком'
         List<List<MPoint>>[] bunches = new List<List<MPoint>>[2];
-        // Окно отладки
+        TextBlock scr1;
+        TextBlock scr2;
+        int intScr1 = 0;
+        int intScr2 = 0;
         // Конструктор 
-        public GamePoints(Window curWindow,Grid g)
+        public GamePoints(Window curWindow,Grid g,TextBlock scr1,TextBlock scr2)
         {
             gameWindow = curWindow;
             grid1 = g;
+            this.scr1 = scr1;
+            this.scr2 = scr2;
         }
 
         // Отрисовка поля
@@ -166,6 +171,8 @@ namespace points
             linksOnPoints = new Ellipse[19, 19];
             bunches = new List<List<MPoint>>[2];
             CaptureElements = new List<UIElement>();
+            intScr1 = 0;
+            intScr2 = 0;
         }
 
         // Установка точки на поле (Если возможно)
@@ -280,11 +287,12 @@ namespace points
                         }
                     }
                 }
-
+                int idScr=0;
                 // Подсчёт захваченных точек
                 while (BunchForDel.Count > 0)
                 {
                     pointsForDel = BunchForDel.Pop();
+                     idScr = pointMatr[pointsForDel[0].i, pointsForDel[0].j];
                     catchedPoints += pointsForDel.Count();
                     foreach (var point in pointsForDel)
                     {
@@ -294,7 +302,16 @@ namespace points
                 }
                 if (catchedPoints > 0)
                 {
-                    MessageBox.Show($"Gotcha {catchedPoints}");
+                    if (idScr == 2)
+                    {
+                        intScr1 += catchedPoints;
+                        scr1.Text =Convert.ToString(intScr1);
+                    }
+                    else if (idScr == 1)
+                    {
+                        intScr2 += catchedPoints;
+                        scr2.Text = Convert.ToString(intScr2);
+                    }
                 }
             }
         }
@@ -467,7 +484,6 @@ namespace points
             {
                 DoubleAnimation back = new DoubleAnimation(0, 0.4, TimeSpan.FromMilliseconds(1000));
                 p.BeginAnimation(Polygon.OpacityProperty, back);
-                MessageBox.Show("Animation");
                 CaptureElements.Add(p);
             }
         }
