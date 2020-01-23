@@ -47,5 +47,19 @@ namespace points
         {
             return $"{i},{j}";
         }
+
+        public override bool Equals(object obj)
+        {
+            MPoint p1 = this;
+            MPoint p2 = obj as MPoint;
+            if ((p1.i == p2.i) && (p1.j == p2.j))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
     }
 }

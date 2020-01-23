@@ -482,7 +482,8 @@ namespace points
                 l.BeginAnimation(Line.Y2Property, da2);
                 CaptureElements.Add(l);
             }
-            if ((LastEdges!=null && LastEdges.Count!=Edges.Count)||(LastEdges==null))
+            
+            if (LastEdges!=null && !Edges.All(t=> LastEdges.Where(e=>e.Equals(t)).Count()>0) ||(LastEdges==null))
             {
                 DoubleAnimation back = new DoubleAnimation(0, 0.4, TimeSpan.FromMilliseconds(1000));
                 p.BeginAnimation(Polygon.OpacityProperty, back);
