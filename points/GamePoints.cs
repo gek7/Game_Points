@@ -173,6 +173,8 @@ namespace points
             CaptureElements = new List<UIElement>();
             intScr1 = 0;
             intScr2 = 0;
+            scr1.Text = $"{intScr1}";
+            scr2.Text = $"{intScr2}";
         }
 
         // Установка точки на поле (Если возможно)

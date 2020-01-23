@@ -17,7 +17,7 @@
             <ComboBoxItem Content="Player vs Player"/>
             <ComboBoxItem Content="Player vs Computer" IsEnabled="False"/>
         </ComboBox>
-        <TextBlock x:Name="ScorePlayer1" Background="red" Width="100" Height="40" Opacity="0.7" Margin="0,0,100,0" Foreground="Blue" TextAlignment="Center" FontSize="25" Text="0" />
+        <TextBlock x:Name="ScorePlayer1" Background="red" Width="100" Height="40" Opacity="0.7" Margin="0,0,150,0" Foreground="Blue" TextAlignment="Center" FontSize="25" Text="0"  />
         <TextBlock x:Name="ScorePlayer2" Background="blue" Width="100" Height="40" Opacity="0.7" Margin="100,0,0,0" Foreground="Red" TextAlignment="Center" FontSize="25" Text="0" />
     </Grid>
 </Window>
