@@ -263,7 +263,13 @@ namespace points
             return t;
         }
 
+
         //Проверка на захват целого 'пучка' точек
+
+        /// <summary>
+        /// Все пучки участвующие в захвате
+        /// Должны стать единым пучком (т.к по отдельности их захватить нельзя)
+        /// </summary>
         public void CheckCatchBunch()
         {
             List<MPoint> Edges=null;
@@ -415,6 +421,13 @@ namespace points
         }
 
         // Отсортировать точки границы(Для анимации)
+
+            /// <summary>
+            /// Переделать алгоритм сортировки 
+            /// (У точки границы должно быть минимум две соприкасающихся точки)
+            /// 1) Убрать все точки имеющие меньше двух соприкасающихся точек
+            /// 2) Протестировать
+            /// </summary>
         public void sortEdges(ref List<MPoint> Edges)
         {
             List<MPoint> outputList = new List<MPoint>();
@@ -432,6 +445,10 @@ namespace points
                         var temp = (tempList.Where(t => t == outputList[i])).First();
                         tempList.Remove(tempList[tempList.IndexOf(temp)]);
                     }
+                    //else if ()
+                    //{
+
+                    //}
                 }
                 
                 bool f = false;
@@ -485,7 +502,7 @@ namespace points
             
             if (LastEdges!=null && !Edges.All(t=> LastEdges.Where(e=>e.Equals(t)).Count()>0) ||(LastEdges==null))
             {
-                DoubleAnimation back = new DoubleAnimation(0, 0.4, TimeSpan.FromMilliseconds(1000));
+                DoubleAnimation back = new DoubleAnimation(0, 0.6, TimeSpan.FromMilliseconds(1000));
                 p.BeginAnimation(Polygon.OpacityProperty, back);
                 CaptureElements.Add(p);
             }

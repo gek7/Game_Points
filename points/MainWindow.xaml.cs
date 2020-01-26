@@ -33,10 +33,16 @@ namespace points
         private void Window_MouseUp(object sender, MouseButtonEventArgs e)
         {
             if (Players.Count > 0)
-            {
+            { 
                 if (mainGame.SetPoint(e.GetPosition(grid1), FindPlayer(CurPlayerId)))
                 {
                     CurPlayerId++;
+                    if (GameMode.SelectedIndex == 1)
+                    {
+                        // Здесь ход бота
+                        CurPlayerId++;
+                    }
+
                     if (CurPlayerId > Players.Count) CurPlayerId = 1;
                 }
             }
